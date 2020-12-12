@@ -214,19 +214,5 @@ FakesAssemblies/
 # Visual Studio 6 workspace options file
 *.opt
 
-# LightSwitch generated files
-GeneratedArtifacts/
-_Pvt_Extensions/
-ModelManifest.xml
-/Source/Web/CIBioBase/CIBioBaseTripAdminClient/CIBioBaseTripAdminClient/buildoutputs
-/Source/Common/ReferenceAssemblies/NoxStaticAssemblies
-/Common/ReferenceAssemblies/NoxStaticAssemblies
-/CodeSigning/EXEHolder/BioBaseUploadTool.exe
-Antares/WebSocketServer/Properties/launchSettings.json
-Antares/WebApi/Properties/launchSettings.json
-Antares/DongleToolApi/Properties/launchSettings.json
-Antares/WebApi/WebApi.xml
-Antares/.artifacts/
-Antares/BuildScripts/tools/
-Antares/WebApi/Antares.WebApi.xml
-Antares/.idea/
+# SQLite database files
+*.db
