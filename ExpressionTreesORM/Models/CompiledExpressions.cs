@@ -4,14 +4,12 @@ using System.Linq.Expressions;
 
 namespace Models
 {
-    // First
-    public static class CompiledExpressions<TExpression, TDelegate>
+    // Second
+    // IT DOESN'T WORK
+    public static class CompiledExpressions
     {
-        private static readonly ConcurrentDictionary<
-            Expression<Func<TExpression, TDelegate>>,
-            Func<TExpression, TDelegate>> Cache = new ();
+        private static readonly ConcurrentDictionary<LambdaExpression, Delegate> Cache = new();
 
-        public static Func<TExpression, TDelegate> AsFunc(Expression<Func<TExpression, TDelegate>> expr) =>
-            Cache.GetOrAdd(expr, expr.Compile());
+        public static T AsFunc<T>(this Expression<T> expr) => (T)(object)Cache.GetOrAdd(expr, (Delegate)(object)expr.Compile());
     }
 }
