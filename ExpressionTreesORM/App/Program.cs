@@ -29,6 +29,14 @@ namespace App
 
             await using var appDbContext = new AppDbContext(options);
 
+            //for (int i = 1; i < 11; i++)
+            //{
+            //    await appDbContext.Products.AddAsync(
+            //        new Product {InStock = 28 % i, IsForSale = i % 2 < 1 || i % 3 < 1, Name = $"{i}"}, Cts.Token);
+            //}
+
+            //await appDbContext.SaveChangesAsync(Cts.Token);
+
             // First
             // foreach (var p in appDbContext.Products.Where(p => p.IsForSale && p.InStock > 1))
 
@@ -38,7 +46,11 @@ namespace App
 
             // Third
             // It works!
-            foreach (var p in appDbContext.Products.Where(new IsForSaleSpec() && !new IsInStockSpec()))
+            //foreach (var p in appDbContext.Products.Where(new IsForSaleSpec() && !new IsInStockSpec()))
+
+            // Fourth
+            // It works as well!
+            foreach (var p in appDbContext.Products.Where(Product.IsAvailable))
             {
                 Console.WriteLine($"{p.Id}: {p.Name} | {p.InStock} | {p.IsForSale}");
             }

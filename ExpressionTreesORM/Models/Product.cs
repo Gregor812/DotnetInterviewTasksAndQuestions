@@ -23,5 +23,11 @@ namespace Models
         //    IsAvailableExpression = x => x.IsForSale && x.InStock > 0;
 
         //public bool IsAvailable => IsAvailableExpression.AsFunc()(this);
+
+        // Fourth
+        // It works as well!
+        public static Spec<Product> IsInStockSpec => new (p => p.InStock > 0);
+        public static Spec<Product> IsForSaleSpec => new (p => p.IsForSale);
+        public static Spec<Product> IsAvailable => new AndSpec<Product>(IsInStockSpec, IsForSaleSpec);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 
+using Expr = System.Linq.Expressions.Expression;
+
 namespace Utils.Specification
 {
     public class NotSpec<T> : Spec<T>
@@ -12,10 +14,13 @@ namespace Utils.Specification
             _spec = spec ?? throw new ArgumentNullException(nameof(spec));
         }
 
-        public override Expression<Func<T, bool>> ToExpression()
+        public override Expression<Func<T, bool>> Expression
         {
-            var expr = _spec.ToExpression();
-            return Expression.Lambda<Func<T, bool>>(Expression.Not(expr.Body), expr.Parameters);
+            get
+            {
+                var expr = _spec.Expression;
+                return Expr.Lambda<Func<T, bool>>(Expr.Not(expr.Body), expr.Parameters);
+            }
         }
 
         public override bool Equals(object? obj)

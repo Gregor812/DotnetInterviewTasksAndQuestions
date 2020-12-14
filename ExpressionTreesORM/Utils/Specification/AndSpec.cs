@@ -14,11 +14,14 @@ namespace Utils.Specification
             _spec2 = spec2 ?? throw new ArgumentNullException(nameof(spec2));
         }
 
-        public override Expression<Func<T, bool>> ToExpression()
+        public override Expression<Func<T, bool>> Expression
         {
-            var expr1 = _spec1.ToExpression();
-            var expr2 = _spec2.ToExpression();
-            return expr1.AndAlso(expr2);
+            get
+            {
+                var expr1 = _spec1.Expression;
+                var expr2 = _spec2.Expression;
+                return expr1.AndAlso(expr2);
+            }
         }
 
         public override bool Equals(object? obj)
