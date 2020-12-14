@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "ExpressionTr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "ExpressionTreesORM\App\App.csproj", "{97FE10D6-0555-4409-92B2-E1BA65F8E5A6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "ExpressionTreesORM\Utils\Utils.csproj", "{5D338E57-7A10-4EE9-91B0-D82EEAD39663}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{97FE10D6-0555-4409-92B2-E1BA65F8E5A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97FE10D6-0555-4409-92B2-E1BA65F8E5A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{97FE10D6-0555-4409-92B2-E1BA65F8E5A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -61,6 +67,7 @@ Global
 		{C95A7D09-C721-4001-A7B2-3511A54D1BAC} = {F81789FC-E15B-4291-AD1D-4F48E78A7AAC}
 		{61A5503E-6FCB-40D9-8172-E16AC03ED368} = {F81789FC-E15B-4291-AD1D-4F48E78A7AAC}
 		{97FE10D6-0555-4409-92B2-E1BA65F8E5A6} = {F81789FC-E15B-4291-AD1D-4F48E78A7AAC}
+		{5D338E57-7A10-4EE9-91B0-D82EEAD39663} = {F81789FC-E15B-4291-AD1D-4F48E78A7AAC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C60EB66D-61F9-4A86-AAD4-B5BE1A79293E}
