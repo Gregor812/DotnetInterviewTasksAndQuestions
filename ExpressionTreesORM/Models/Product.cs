@@ -15,6 +15,8 @@ namespace Models
         // public bool IsAvailable => IsForSale && InStock > 0;
 
         // Second
+        // IT DOESN'T WORK BECAUSE I DON'T KNOW (MAYBE THAT'S TRUE ONLY FOR SQLITE PROVIDER?)
+
         private static readonly Expression<Func<Product, bool>>
             IsAvailableExpression = x => x.IsForSale && x.InStock > 0;
 
