@@ -36,7 +36,9 @@ namespace App
             // IT DOESN'T WORK BECAUSE I DON'T KNOW (MAYBE THAT'S TRUE ONLY FOR SQLITE PROVIDER?)
             // foreach (var p in appDbContext.Products.Where(p => p.IsAvailable))
 
-            foreach (var p in appDbContext.Products.Where(p => p.IsAvailable))
+            // Third
+            // It works!
+            foreach (var p in appDbContext.Products.Where(new IsForSaleSpec() && !new IsInStockSpec()))
             {
                 Console.WriteLine($"{p.Id}: {p.Name} | {p.InStock} | {p.IsForSale}");
             }
