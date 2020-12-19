@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Persistence", "ExpressionTr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App", "ExpressionTreesORM\App\App.csproj", "{97FE10D6-0555-4409-92B2-E1BA65F8E5A6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Utils", "ExpressionTreesORM\Utils\Utils.csproj", "{5D338E57-7A10-4EE9-91B0-D82EEAD39663}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "ExpressionTreesORM\Utils\Utils.csproj", "{5D338E57-7A10-4EE9-91B0-D82EEAD39663}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoAndContraVariance", "CoAndContraVariance\CoAndContraVariance.csproj", "{8860E034-2136-49AF-B143-71DE47B7D54B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,6 +61,10 @@ Global
 		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5D338E57-7A10-4EE9-91B0-D82EEAD39663}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8860E034-2136-49AF-B143-71DE47B7D54B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8860E034-2136-49AF-B143-71DE47B7D54B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8860E034-2136-49AF-B143-71DE47B7D54B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8860E034-2136-49AF-B143-71DE47B7D54B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
