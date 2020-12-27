@@ -216,3 +216,4 @@ FakesAssemblies/
 
 # SQLite database files
 *.db
+*/Properties/launchSettings.json
