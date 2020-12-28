@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 
-namespace GzipMT
+namespace GzipMT.DataStructures
 {
-    class BoundedConcurrentQueue<T>
+    public class BoundedConcurrentQueue<T>
     {
         private const int MaxItems = 8;
 
@@ -52,7 +52,7 @@ namespace GzipMT
                 }
             }
 
-            item = default(T);
+            item = default;
             return false;
         }
     }
