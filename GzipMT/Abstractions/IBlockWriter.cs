@@ -1,8 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace GzipMT.Abstractions
 {
-    public interface IBlockWriter<in T>
+    public interface IBlockWriter<in T> : IDisposable
     {
         int BlocksWritten { get; }
         void WriteFileBlock(T block, string filename, CancellationToken ct);

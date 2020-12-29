@@ -15,11 +15,13 @@ namespace GzipMT.Application
             switch (options)
             {
                 case CompressingOptions o:
-                    return new Compressor(o, bufferSize,
-                        new UncompressedBlockReader(bufferSize));
+                    var uncompressedReader =
+                        UncompressedBlockReader.GetInstance(o.InputFile, bufferSize);
+                    return new Compressor(o, bufferSize, uncompressedReader);
                 case DecompressingOptions o:
-                    return new Decompressor(o, bufferSize,
-                        new CompressedBlockReader(bufferSize));
+                    var compressedReader =
+                        CompressedBlockReader.GetInstance(o.InputFile, bufferSize);
+                    return new Decompressor(o, bufferSize, compressedReader);
                 default:
                     throw new ArgumentException($"Unknown options type: {options.GetType().Name}");
             }

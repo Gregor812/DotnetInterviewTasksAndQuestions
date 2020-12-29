@@ -5,8 +5,17 @@ namespace GzipMT.Application
 {
     public class UncompressedBlockReader : BlockReader<UncompressedBlock>
     {
-        public UncompressedBlockReader(int bufferSize)
-            : base(bufferSize)
+        /// <summary>Creates an instance of the UncompressedBlockReader class</summary>
+        /// <returns cref="UncompressedBlockReader"></returns>
+        /// <inheritdoc cref="File.OpenRead"/>
+        public static UncompressedBlockReader GetInstance(string filename, int bufferSize)
+        {
+            var inputFile = File.OpenRead(filename);
+            return new UncompressedBlockReader(inputFile, bufferSize);
+        }
+
+        private UncompressedBlockReader(FileStream inputFile, int bufferSize)
+            : base(inputFile, bufferSize)
         { }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out UncompressedBlock block)

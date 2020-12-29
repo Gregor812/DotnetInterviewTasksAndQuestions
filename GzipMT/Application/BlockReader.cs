@@ -11,17 +11,18 @@ namespace GzipMT.Application
     {
         public int BlocksRead { get; private set; } // TODO: What if file is already read
 
+        private readonly FileStream _inputFile;
         protected int BufferSize;
 
-        protected BlockReader(int bufferSize)
+        protected BlockReader(FileStream inputFile, int bufferSize)
         {
+            _inputFile = inputFile;
             BufferSize = bufferSize;
         }
 
         public IEnumerable<T> GetFileBlocks(string filename, CancellationToken ct) // TODO: move filename in ctor
         {
-            using (var inputFile = File.OpenRead(filename))
-            using (var binaryReader = new BinaryReader(inputFile))
+            using (var binaryReader = new BinaryReader(_inputFile))
             {
                 while (!ct.IsCancellationRequested)
                 {
@@ -36,6 +37,11 @@ namespace GzipMT.Application
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            _inputFile?.Dispose();
         }
 
         protected abstract bool TryReadInputBlock(BinaryReader binaryReader, out T block);
