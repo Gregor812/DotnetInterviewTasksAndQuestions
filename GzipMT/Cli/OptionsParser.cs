@@ -19,7 +19,9 @@ If called with 'compress' or 'decompress' verb, 'input file' and 'output file' a
             args = args ?? new string[] { };
 
             if (args.Length < 1)
+            {
                 throw new ParsingException(UsageText);
+            }
 
             var verb = args[0].ToLowerInvariant();
 
@@ -40,7 +42,9 @@ If called with 'compress' or 'decompress' verb, 'input file' and 'output file' a
         private static ProcessingOptions ParseProcessingArgs(string[] args)
         {
             if (args.Length < 3)
+            {
                 throw new ParsingException($"Not enough args{Environment.NewLine}{Environment.NewLine}{UsageText}");
+            }
 
             var verb = args[0].ToLowerInvariant();
 

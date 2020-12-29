@@ -1,4 +1,5 @@
-﻿using GzipMT.Cli;
+﻿using GzipMT.Abstractions;
+using GzipMT.Cli;
 using GzipMT.DataStructures;
 using GzipMT.Extensions;
 using System.IO;
@@ -12,7 +13,10 @@ namespace GzipMT.Application
             CompressedBlock,
             UncompressedBlock>
     {
-        public Decompressor(DecompressingOptions options, int bufferSize, CompressedBlockReader reader)
+        protected override string Description => $"Decompressing file {Options.InputFile}...";
+
+        public Decompressor(DecompressingOptions options, int bufferSize,
+            IBlockReader<CompressedBlock> reader)
             : base(options, bufferSize, reader)
         { }
 

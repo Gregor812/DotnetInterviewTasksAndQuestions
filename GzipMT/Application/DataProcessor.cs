@@ -1,9 +1,9 @@
 ﻿using GzipMT.Abstractions;
+using GzipMT.Auxiliary;
 using GzipMT.Cli;
 using GzipMT.DataStructures;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
@@ -14,42 +14,35 @@ namespace GzipMT.Application
         where TInput : Block
         where TOutput : Block
     {
-        protected readonly int WorkerThreadsNumber = Environment.ProcessorCount;
+        protected abstract string Description { get; }
 
         protected readonly TOptions Options;
-
         protected readonly int BufferSize;
-
         protected readonly BoundedConcurrentQueue<TInput> InputQueue;
         protected readonly BoundedConcurrentQueue<TOutput> OutputQueue;
 
-        protected readonly List<Thread> Threads;
-
-        protected readonly ManualResetEventSlim ReadingDone;
-        protected readonly ManualResetEventSlim ProcessingDone;
-        protected readonly ManualResetEventSlim WritingDone;
+        private readonly List<Thread> _threads;
+        private readonly ManualResetEventSlim _readingDone;
+        private readonly ManualResetEventSlim _processingDone;
+        private readonly ManualResetEventSlim _writingDone;
+        private readonly IBlockReader<TInput> _reader;
 
         protected int BlocksWritten;
 
-        private readonly IBlockReader<TInput> _reader;
-
-        protected DataProcessor(TOptions options, int bufferSize, IBlockReader<TInput> reader)
+        // TODO: Inject logger as external dependency
+        protected DataProcessor(TOptions options, int bufferSize,
+            IBlockReader<TInput> reader)
         {
-            BufferSize = bufferSize;
-
             Options = options;
-
+            BufferSize = bufferSize;
             InputQueue = new BoundedConcurrentQueue<TInput>();
             OutputQueue = new BoundedConcurrentQueue<TOutput>();
 
-            Threads = new List<Thread>(WorkerThreadsNumber + 2);
-
-            ReadingDone = new ManualResetEventSlim();
-            ProcessingDone = new ManualResetEventSlim();
-            WritingDone = new ManualResetEventSlim();
-
+            _threads = new List<Thread>(options.WorkerThreadsNumber + 2);
+            _readingDone = new ManualResetEventSlim();
+            _processingDone = new ManualResetEventSlim();
+            _writingDone = new ManualResetEventSlim();
             _reader = reader;
-            BufferSize = bufferSize;
         }
 
         protected abstract TOutput FillOutputBlockData(TInput block);
@@ -57,54 +50,39 @@ namespace GzipMT.Application
 
         public int Run(CancellationToken ct)
         {
-            Console.WriteLine($"Compressing file {Options.InputFile}...");
-            Console.WriteLine($"Worker threads number is {WorkerThreadsNumber}");
+            Console.WriteLine(Description);
+            Console.WriteLine($"Worker threads number is {Options.WorkerThreadsNumber}");
             Console.WriteLine();
 
-            var workerThreads = new List<Thread>(WorkerThreadsNumber);
+            var workerThreads = new List<Thread>(Options.WorkerThreadsNumber);
 
             var readInputBlocks = new Thread(() => ReadInputBlocks(Options.InputFile, ct))
             {
                 Name = nameof(ReadInputBlocks)
             };
-            for (int i = 0; i < WorkerThreadsNumber; ++i)
+            for (int i = 0; i < Options.WorkerThreadsNumber; ++i)
             {
                 workerThreads.Add(new Thread(() => ProcessInputBlocks(ct)) { Name = nameof(ProcessInputBlocks) });
             }
-
             var writeOutputBlocks = new Thread(() => WriteOutputBlocks(Options.OutputFile, ct))
             {
                 Name = nameof(WriteOutputBlocks)
             };
 
-            Threads.Add(readInputBlocks);
-            Threads.AddRange(workerThreads);
-            Threads.Add(writeOutputBlocks);
+            _threads.Add(readInputBlocks);
+            _threads.AddRange(workerThreads);
+            _threads.Add(writeOutputBlocks);
 
-            var sw = new Stopwatch();
-            sw.Start();
-
-            readInputBlocks.Start();
-            workerThreads.ForEach(t => t.Start());
-            writeOutputBlocks.Start();
-            workerThreads.ForEach(t => t.Join());
-
-            ProcessingDone.Set();
-
-            WaitHandle.WaitAll(new[]
+            using (var sw = new ScopedStopwatch())
             {
-                ReadingDone.WaitHandle,
-                ProcessingDone.WaitHandle,
-                WritingDone.WaitHandle
-            });
-            sw.Stop();
+                _threads.ForEach(t => t.Start());
+                workerThreads.ForEach(t => t.Join());
+                _processingDone.Set();
 
-            foreach (var thread in Threads)
-            {
-                thread.Join();
+                _writingDone.Wait(ct);
+                Console.WriteLine($"Elapsed: {sw.Elapsed:c}");
             }
 
-            Console.WriteLine($"Elapsed: {sw.Elapsed:c}");
             Console.WriteLine($"Blocks read: {_reader.BlocksRead}, blocks written: {BlocksWritten}");
             Console.WriteLine("Done");
 
@@ -113,47 +91,49 @@ namespace GzipMT.Application
 
         public void WaitForExit()
         {
-            foreach (var thread in Threads)
-            {
-                thread.Join();
-            }
+            _writingDone.Wait();
         }
 
-        protected void ReadInputBlocks(string inputFileName, CancellationToken ct)
+        protected void ReadInputBlocks(string inputFileName, CancellationToken ct) // TODO: move filename to ctor
         {
-            var spin = new SpinWait();
+            var spinner = new SpinWait();
             foreach (var block in _reader.GetFileBlocks(inputFileName, ct))
             {
-                while (!InputQueue.TryEnqueue(block))
-                    spin.SpinOnce();
+                while (!(InputQueue.TryEnqueue(block) || ct.IsCancellationRequested))
+                {
+                    spinner.SpinOnce();
+                }
             }
-
-            ReadingDone.Set();
+            _readingDone.Set();
         }
 
         private void ProcessInputBlocks(CancellationToken ct)
         {
-            var spin = new SpinWait();
-
-            while (!ct.IsCancellationRequested && !(ReadingDone.IsSet && InputQueue.IsEmpty))
+            var spinner = new SpinWait();
+            while (!(_readingDone.IsSet && InputQueue.IsEmpty || ct.IsCancellationRequested))
             {
                 if (InputQueue.TryDequeue(out var block))
                 {
                     var outputBlock = FillOutputBlockData(block);
-                    while (!OutputQueue.TryEnqueue(outputBlock))
-                        spin.SpinOnce();
+                    while (!(OutputQueue.TryEnqueue(outputBlock) || ct.IsCancellationRequested))
+                    {
+                        spinner.SpinOnce();
+                    }
                 }
                 else
-                    spin.SpinOnce();
+                {
+                    spinner.SpinOnce();
+                }
             }
         }
 
         protected void WriteOutputBlocks(string outputFileName, CancellationToken ct)
         {
+            var spinner = new SpinWait();
             using (var outputFile = File.OpenWrite(outputFileName))
             using (var binaryWriter = new BinaryWriter(outputFile))
             {
-                while (!ct.IsCancellationRequested && !(OutputQueue.IsEmpty && ProcessingDone.IsSet))
+                while (!(_processingDone.IsSet && OutputQueue.IsEmpty || ct.IsCancellationRequested))
                 {
                     if (OutputQueue.TryDequeue(out var block))
                     {
@@ -161,13 +141,17 @@ namespace GzipMT.Application
                         ++BlocksWritten;
                     }
                     else
-                        Thread.Yield();
+                    {
+                        spinner.SpinOnce();
+                    }
                 }
             }
-            if (ct.IsCancellationRequested)
-                File.Delete(outputFileName);
 
-            WritingDone.Set();
+            if (ct.IsCancellationRequested)
+            {
+                File.Delete(outputFileName);
+            }
+            _writingDone.Set();
         }
     }
 }

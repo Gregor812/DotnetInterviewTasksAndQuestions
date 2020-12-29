@@ -25,7 +25,7 @@ namespace GzipMT.Extensions
             }
             catch (EndOfStreamException)
             {
-                return default;
+                return default; // TODO: research for another way to stop the reading
             }
         }
     }

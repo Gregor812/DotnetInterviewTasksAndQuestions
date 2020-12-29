@@ -9,7 +9,7 @@ namespace GzipMT.Application
     public abstract class BlockReader<T> : IBlockReader<T>
         where T : Block
     {
-        public int BlocksRead { get; private set; }
+        public int BlocksRead { get; private set; } // TODO: What if file is already read
 
         protected int BufferSize;
 
@@ -18,19 +18,22 @@ namespace GzipMT.Application
             BufferSize = bufferSize;
         }
 
-        public IEnumerable<T> GetFileBlocks(string filename, CancellationToken ct)
+        public IEnumerable<T> GetFileBlocks(string filename, CancellationToken ct) // TODO: move filename in ctor
         {
             using (var inputFile = File.OpenRead(filename))
             using (var binaryReader = new BinaryReader(inputFile))
             {
                 while (!ct.IsCancellationRequested)
                 {
-                    if (TryReadInputBlock(binaryReader, out var block))
+                    if (TryReadInputBlock(binaryReader, out var block) && !ct.IsCancellationRequested)
                     {
                         ++BlocksRead;
                         yield return block;
                     }
-                    else break;
+                    else
+                    {
+                        break;
+                    }
                 }
             }
         }

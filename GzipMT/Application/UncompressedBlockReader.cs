@@ -7,8 +7,7 @@ namespace GzipMT.Application
     {
         public UncompressedBlockReader(int bufferSize)
             : base(bufferSize)
-        {
-        }
+        { }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out UncompressedBlock block)
         {

@@ -16,6 +16,7 @@ namespace GzipMT
         static int Main(string[] args)
         {
             Console.CancelKeyPress += Console_CancelKeyPress;
+            Console.WriteLine("Press Ctrl+C to cancel");
             try
             {
                 var options = OptionsParser.ParseArgs(args);
