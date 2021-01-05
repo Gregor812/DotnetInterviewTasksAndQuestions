@@ -12,11 +12,11 @@ namespace GzipMT.Application
         public static CompressedBlockReader GetInstance(string filename, int bufferSize)
         {
             var inputFile = File.OpenRead(filename);
-            return new CompressedBlockReader(inputFile, bufferSize);
+            return new CompressedBlockReader(inputFile, bufferSize, false);
         }
 
-        private CompressedBlockReader(FileStream inputFile, int bufferSize)
-            : base(inputFile, bufferSize)
+        private CompressedBlockReader(FileStream inputFile, int bufferSize, bool leaveOpen)
+            : base(inputFile, bufferSize, leaveOpen)
         { }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out CompressedBlock block)

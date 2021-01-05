@@ -9,6 +9,6 @@ namespace GzipMT.Abstractions
         where T : Block
     {
         int BlocksRead { get; }
-        IEnumerable<T> GetFileBlocks(string filename, CancellationToken ct);
+        IEnumerable<T> GetFileBlocks(CancellationToken ct);
     }
 }

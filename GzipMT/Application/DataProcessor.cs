@@ -5,6 +5,7 @@ using GzipMT.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace GzipMT.Application
@@ -18,8 +19,8 @@ namespace GzipMT.Application
 
         protected readonly TOptions Options;
         protected readonly int BufferSize;
-        protected readonly BoundedConcurrentQueue<TInput> InputQueue;
-        protected readonly BoundedConcurrentQueue<TOutput> OutputQueue;
+        protected readonly IQueue<TInput>[] InputQueues;
+        protected readonly IQueue<TOutput>[] OutputQueues;
 
         private readonly List<Thread> _threads;
         private readonly ManualResetEventSlim _readingDone;
@@ -35,8 +36,8 @@ namespace GzipMT.Application
         {
             Options = options;
             BufferSize = bufferSize;
-            InputQueue = new BoundedConcurrentQueue<TInput>();
-            OutputQueue = new BoundedConcurrentQueue<TOutput>();
+            InputQueues = new BoundedConcurrentQueue<TInput>[Options.WorkerThreadsNumber];
+            OutputQueues = new BoundedConcurrentQueue<TOutput>[Options.WorkerThreadsNumber];
 
             _threads = new List<Thread>(options.WorkerThreadsNumber + 2);
             _readingDone = new ManualResetEventSlim();
@@ -54,15 +55,23 @@ namespace GzipMT.Application
             Console.WriteLine($"Worker threads number is {Options.WorkerThreadsNumber}");
             Console.WriteLine();
 
+            for (int i = 0; i < Options.WorkerThreadsNumber; ++i)
+            {
+                InputQueues[i] = new BoundedConcurrentQueue<TInput>(2);
+                OutputQueues[i] = new BoundedConcurrentQueue<TOutput>(2);
+            }
+
             var workerThreads = new List<Thread>(Options.WorkerThreadsNumber);
 
-            var readInputBlocks = new Thread(() => ReadInputBlocks(Options.InputFile, ct))
+            var readInputBlocks = new Thread(() => ReadInputBlocks(ct))
             {
                 Name = nameof(ReadInputBlocks)
             };
             for (int i = 0; i < Options.WorkerThreadsNumber; ++i)
             {
-                workerThreads.Add(new Thread(() => ProcessInputBlocks(ct)) { Name = nameof(ProcessInputBlocks) });
+                var inputQueue = InputQueues[i];
+                var outputQueue = OutputQueues[i];
+                workerThreads.Add(new Thread(() => ProcessInputBlocks(inputQueue, outputQueue, ct)) { Name = nameof(ProcessInputBlocks) });
             }
             var writeOutputBlocks = new Thread(() => WriteOutputBlocks(Options.OutputFile, ct))
             {
@@ -94,12 +103,13 @@ namespace GzipMT.Application
             _writingDone.Wait();
         }
 
-        protected void ReadInputBlocks(string inputFileName, CancellationToken ct) // TODO: move filename to ctor
+        protected void ReadInputBlocks(CancellationToken ct) // TODO: move filename to ctor
         {
             var spinner = new SpinWait();
-            foreach (var block in _reader.GetFileBlocks(inputFileName, ct))
+            foreach (var block in _reader.GetFileBlocks(ct))
             {
-                while (!(InputQueue.TryEnqueue(block) || ct.IsCancellationRequested))
+                var nextQueue = InputQueues[(_reader.BlocksRead - 1) % Options.WorkerThreadsNumber];
+                while (!(nextQueue.TryEnqueue(block) || ct.IsCancellationRequested))
                 {
                     spinner.SpinOnce();
                 }
@@ -107,15 +117,15 @@ namespace GzipMT.Application
             _readingDone.Set();
         }
 
-        private void ProcessInputBlocks(CancellationToken ct)
+        private void ProcessInputBlocks(IQueue<TInput> inputQueue, IQueue<TOutput> outputQueue, CancellationToken ct)
         {
             var spinner = new SpinWait();
-            while (!(_readingDone.IsSet && InputQueue.IsEmpty || ct.IsCancellationRequested))
+            while (!(_readingDone.IsSet && inputQueue.IsEmpty || ct.IsCancellationRequested))
             {
-                if (InputQueue.TryDequeue(out var block))
+                if (inputQueue.TryDequeue(out var block))
                 {
                     var outputBlock = FillOutputBlockData(block);
-                    while (!(OutputQueue.TryEnqueue(outputBlock) || ct.IsCancellationRequested))
+                    while (!(outputQueue.TryEnqueue(outputBlock) || ct.IsCancellationRequested))
                     {
                         spinner.SpinOnce();
                     }
@@ -133,9 +143,10 @@ namespace GzipMT.Application
             using (var outputFile = File.OpenWrite(outputFileName))
             using (var binaryWriter = new BinaryWriter(outputFile))
             {
-                while (!(_processingDone.IsSet && OutputQueue.IsEmpty || ct.IsCancellationRequested))
+                while (!(_processingDone.IsSet && OutputQueues.All(q => q.IsEmpty) || ct.IsCancellationRequested))
                 {
-                    if (OutputQueue.TryDequeue(out var block))
+                    var nextQueue = OutputQueues[BlocksWritten % Options.WorkerThreadsNumber];
+                    if (nextQueue.TryDequeue(out var block))
                     {
                         WriteOutputBlock(binaryWriter, block);
                         ++BlocksWritten;

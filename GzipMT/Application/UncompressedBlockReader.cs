@@ -11,11 +11,11 @@ namespace GzipMT.Application
         public static UncompressedBlockReader GetInstance(string filename, int bufferSize)
         {
             var inputFile = File.OpenRead(filename);
-            return new UncompressedBlockReader(inputFile, bufferSize);
+            return new UncompressedBlockReader(inputFile, bufferSize, false);
         }
 
-        private UncompressedBlockReader(FileStream inputFile, int bufferSize)
-            : base(inputFile, bufferSize)
+        private UncompressedBlockReader(FileStream inputFile, int bufferSize, bool leaveOpen)
+            : base(inputFile, bufferSize, leaveOpen)
         { }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out UncompressedBlock block)
