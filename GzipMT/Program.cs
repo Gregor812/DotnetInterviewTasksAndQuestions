@@ -29,8 +29,10 @@ namespace GzipMT
                         Console.WriteLine(o.VersionText);
                         return 0;
                     case ProcessingOptions o:
-                        _dataProcessor = DataProcessorFactory.GetInstance(o, BufferSize);
-                        return _dataProcessor.Run(Cts.Token);
+                        using (_dataProcessor = DataProcessorFactory.GetInstance(o, BufferSize))
+                        {
+                            return _dataProcessor.Run(Cts.Token);
+                        }
                 }
             }
             catch (ParsingException e)

@@ -10,15 +10,15 @@ namespace GzipMT.Application
         where T : Block
     {
         private readonly FileStream _outputFile;
-        protected int BufferSize;
+        private readonly bool _leaveOpen;
 
-        protected BlockWriter(FileStream outputFile, int bufferSize)
+        protected BlockWriter(FileStream outputFile, bool leaveOpen)
         {
             _outputFile = outputFile;
-            BufferSize = bufferSize;
+            _leaveOpen = leaveOpen;
         }
 
-        public void WriteFileBlock(T block, string filename, CancellationToken ct)
+        public void WriteFileBlock(T block, CancellationToken ct)
         {
             using (var binaryWriter = new BinaryWriter(_outputFile, Encoding.Default, true))
             {
@@ -28,7 +28,10 @@ namespace GzipMT.Application
 
         public void Dispose()
         {
-            _outputFile?.Dispose();
+            if (!_leaveOpen)
+            {
+                _outputFile?.Dispose();
+            }
         }
 
         protected abstract void WriteOutputBlock(BinaryWriter binaryWriter, T block);

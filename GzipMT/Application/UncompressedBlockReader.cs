@@ -5,6 +5,7 @@ namespace GzipMT.Application
 {
     public class UncompressedBlockReader : BlockReader<UncompressedBlock>
     {
+        private readonly int _bufferSize;
         /// <summary>Creates an instance of the UncompressedBlockReader class</summary>
         /// <returns cref="UncompressedBlockReader"></returns>
         /// <inheritdoc cref="File.OpenRead"/>
@@ -15,12 +16,14 @@ namespace GzipMT.Application
         }
 
         private UncompressedBlockReader(FileStream inputFile, int bufferSize, bool leaveOpen)
-            : base(inputFile, bufferSize, leaveOpen)
-        { }
+            : base(inputFile, leaveOpen)
+        {
+            _bufferSize = bufferSize;
+        }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out UncompressedBlock block)
         {
-            var bytes = binaryReader.ReadBytes(BufferSize);
+            var bytes = binaryReader.ReadBytes(_bufferSize);
             if (bytes.Length == 0)
             {
                 block = default;

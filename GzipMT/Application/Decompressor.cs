@@ -9,38 +9,33 @@ using System.Linq;
 namespace GzipMT.Application
 {
     public class Decompressor :
-        DataProcessor<DecompressingOptions,
-            CompressedBlock,
-            UncompressedBlock>
+        DataProcessor<CompressedBlock, UncompressedBlock>
     {
-        protected override string Description => $"Decompressing file {Options.InputFile}...";
+        private readonly int _bufferSize;
 
-        public Decompressor(DecompressingOptions options, int bufferSize,
-            IBlockReader<CompressedBlock> reader)
-            : base(options, bufferSize, reader)
-        { }
-
-        protected override UncompressedBlock FillOutputBlockData(CompressedBlock block)
+        public Decompressor(int workerThreadsNumber, IBlockReader<CompressedBlock> reader,
+            IBlockWriter<UncompressedBlock> writer, int bufferSize)
+            : base(workerThreadsNumber, reader, writer)
         {
-            var buffer = new byte[BufferSize];
+            _bufferSize = bufferSize;
+        }
+
+        protected override UncompressedBlock CreateOutputBlock(CompressedBlock block)
+        {
+            var buffer = new byte[_bufferSize];
             int readBytes;
 
             using (var inputMemory = new MemoryStream(block.Data))
             using (var gZipStream = new GZipStream(inputMemory, CompressionMode.Decompress))
             {
-                readBytes = gZipStream.Read(buffer, 0, BufferSize);
+                readBytes = gZipStream.Read(buffer, 0, _bufferSize);
             }
 
             var item = new UncompressedBlock
             {
-                Data = readBytes == BufferSize ? buffer : buffer.Take(readBytes).ToArray()
+                Data = readBytes == _bufferSize ? buffer : buffer.Take(readBytes).ToArray()
             };
             return item;
-        }
-
-        protected override void WriteOutputBlock(BinaryWriter binaryWriter, UncompressedBlock block)
-        {
-            binaryWriter.Write(block);
         }
     }
 }

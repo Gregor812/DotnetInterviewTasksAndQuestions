@@ -1,24 +1,18 @@
 ﻿using GzipMT.Abstractions;
-using GzipMT.Cli;
 using GzipMT.DataStructures;
-using GzipMT.Extensions;
 using System.IO;
 using System.IO.Compression;
 
 namespace GzipMT.Application
 {
-    public class Compressor : DataProcessor<CompressingOptions,
-            UncompressedBlock,
-            CompressedBlock>
+    public class Compressor : DataProcessor<UncompressedBlock, CompressedBlock>
     {
-        protected override string Description => $"Compressing file {Options.InputFile}...";
-        
-        public Compressor(CompressingOptions options, int bufferSize,
-            IBlockReader<UncompressedBlock> reader)
-            : base(options, bufferSize, reader)
+        public Compressor(int workerThreadsNumber, IBlockReader<UncompressedBlock> reader,
+            IBlockWriter<CompressedBlock> writer)
+            : base(workerThreadsNumber, reader, writer)
         { }
 
-        protected override CompressedBlock FillOutputBlockData(UncompressedBlock block)
+        protected override CompressedBlock CreateOutputBlock(UncompressedBlock block)
         {
             using (var outputMemoryStream = new MemoryStream()) // TODO: profile allocations
             {
@@ -32,11 +26,6 @@ namespace GzipMT.Application
                     Data = outputMemoryStream.ToArray() // TODO: Check if there is a possibility to store the memory stream
                 };
             }
-        }
-
-        protected override void WriteOutputBlock(BinaryWriter binaryWriter, CompressedBlock block)
-        {
-            binaryWriter.Write(block);
         }
     }
 }

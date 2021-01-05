@@ -5,6 +5,6 @@ namespace GzipMT.Abstractions
 {
     public interface IBlockWriter<in T> : IDisposable
     {
-        void WriteFileBlock(T block, string filename, CancellationToken ct);
+        void WriteFileBlock(T block, CancellationToken ct);
     }
 }

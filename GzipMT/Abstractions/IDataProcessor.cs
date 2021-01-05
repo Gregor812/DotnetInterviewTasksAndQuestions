@@ -1,8 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 
 namespace GzipMT.Abstractions
 {
-    public interface IDataProcessor
+    public interface IDataProcessor : IDisposable
     {
         int Run(CancellationToken ct);
         void WaitForExit();

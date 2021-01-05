@@ -9,14 +9,14 @@ namespace GzipMT.Application
         /// <summary>Creates an instance of the CompressedBlockReader class</summary>
         /// <returns cref="CompressedBlockReader"></returns>
         /// <inheritdoc cref="File.OpenRead"/>
-        public static CompressedBlockReader GetInstance(string filename, int bufferSize)
+        public static CompressedBlockReader GetInstance(string filename)
         {
             var inputFile = File.OpenRead(filename);
-            return new CompressedBlockReader(inputFile, bufferSize, false);
+            return new CompressedBlockReader(inputFile, false);
         }
 
-        private CompressedBlockReader(FileStream inputFile, int bufferSize, bool leaveOpen)
-            : base(inputFile, bufferSize, leaveOpen)
+        private CompressedBlockReader(FileStream inputFile, bool leaveOpen)
+            : base(inputFile, leaveOpen)
         { }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out CompressedBlock block)

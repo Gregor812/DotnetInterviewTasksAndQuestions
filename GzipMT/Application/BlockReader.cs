@@ -12,12 +12,10 @@ namespace GzipMT.Application
     {
         private readonly FileStream _inputFile;
         private readonly bool _leaveOpen;
-        protected int BufferSize;
 
-        protected BlockReader(FileStream inputFile, int bufferSize, bool leaveOpen)
+        protected BlockReader(FileStream inputFile, bool leaveOpen)
         {
             _inputFile = inputFile;
-            BufferSize = bufferSize;
             _leaveOpen = leaveOpen;
         }
 
