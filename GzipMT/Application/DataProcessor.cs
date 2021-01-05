@@ -98,7 +98,7 @@ namespace GzipMT.Application
             _writingDone.Wait();
         }
 
-        protected void ReadInputBlocks(CancellationToken ct) // TODO: move filename to ctor
+        protected void ReadInputBlocks(CancellationToken ct)
         {
             var spinner = new SpinWait();
             foreach (var block in _reader.GetFileBlocks(ct))

@@ -9,8 +9,6 @@ namespace GzipMT.Application
     public abstract class BlockWriter<T> : IBlockWriter<T>
         where T : Block
     {
-        public int BlocksWritten { get; private set; } // TODO: what if file is already written
-
         private readonly FileStream _outputFile;
         protected int BufferSize;
 
@@ -25,7 +23,6 @@ namespace GzipMT.Application
             using (var binaryWriter = new BinaryWriter(_outputFile, Encoding.Default, true))
             {
                 WriteOutputBlock(binaryWriter, block);
-                ++BlocksWritten;
             }
         }
 
