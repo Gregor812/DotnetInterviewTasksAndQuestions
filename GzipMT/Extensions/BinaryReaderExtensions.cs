@@ -13,13 +13,11 @@ namespace GzipMT.Extensions
 
             try
             {
-                var blockNumber = binaryReader.ReadInt32();
                 var blockSize = binaryReader.ReadInt32();
                 var blockData = binaryReader.ReadBytes(blockSize);
 
                 return new CompressedBlock
                 {
-                    Number = blockNumber,
                     Data = blockData
                 };
             }

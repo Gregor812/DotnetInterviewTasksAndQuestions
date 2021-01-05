@@ -29,7 +29,6 @@ namespace GzipMT.Application
 
                 return new CompressedBlock
                 {
-                    Number = block.Number,
                     Data = outputMemoryStream.ToArray() // TODO: Check if there is a possibility to store the memory stream
                 };
             }

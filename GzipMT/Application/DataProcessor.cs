@@ -22,12 +22,12 @@ namespace GzipMT.Application
         protected readonly IQueue<TInput>[] InputQueues;
         protected readonly IQueue<TOutput>[] OutputQueues;
 
-        private readonly List<Thread> _threads;
         private readonly ManualResetEventSlim _readingDone;
-        private readonly ManualResetEventSlim _processingDone;
+        private readonly CountdownEvent _processingDone;
         private readonly ManualResetEventSlim _writingDone;
         private readonly IBlockReader<TInput> _reader;
 
+        protected int BlocksRead;
         protected int BlocksWritten;
 
         // TODO: Inject logger as external dependency
@@ -39,9 +39,8 @@ namespace GzipMT.Application
             InputQueues = new BoundedConcurrentQueue<TInput>[Options.WorkerThreadsNumber];
             OutputQueues = new BoundedConcurrentQueue<TOutput>[Options.WorkerThreadsNumber];
 
-            _threads = new List<Thread>(options.WorkerThreadsNumber + 2);
             _readingDone = new ManualResetEventSlim();
-            _processingDone = new ManualResetEventSlim();
+            _processingDone = new CountdownEvent(Options.WorkerThreadsNumber);
             _writingDone = new ManualResetEventSlim();
             _reader = reader;
         }
@@ -61,38 +60,34 @@ namespace GzipMT.Application
                 OutputQueues[i] = new BoundedConcurrentQueue<TOutput>(2);
             }
 
-            var workerThreads = new List<Thread>(Options.WorkerThreadsNumber);
-
+            var threads = new List<Thread>(Options.WorkerThreadsNumber + 2);
             var readInputBlocks = new Thread(() => ReadInputBlocks(ct))
             {
                 Name = nameof(ReadInputBlocks)
             };
+            threads.Add(readInputBlocks);
+
             for (int i = 0; i < Options.WorkerThreadsNumber; ++i)
             {
                 var inputQueue = InputQueues[i];
                 var outputQueue = OutputQueues[i];
-                workerThreads.Add(new Thread(() => ProcessInputBlocks(inputQueue, outputQueue, ct)) { Name = nameof(ProcessInputBlocks) });
+                threads.Add(new Thread(() => ProcessInputBlocks(inputQueue, outputQueue, ct)) { Name = $"{nameof(ProcessInputBlocks)}_{i}" });
             }
+
             var writeOutputBlocks = new Thread(() => WriteOutputBlocks(Options.OutputFile, ct))
             {
                 Name = nameof(WriteOutputBlocks)
             };
-
-            _threads.Add(readInputBlocks);
-            _threads.AddRange(workerThreads);
-            _threads.Add(writeOutputBlocks);
+            threads.Add(writeOutputBlocks);
 
             using (var sw = new ScopedStopwatch())
             {
-                _threads.ForEach(t => t.Start());
-                workerThreads.ForEach(t => t.Join());
-                _processingDone.Set();
-
+                threads.ForEach(t => t.Start());
                 _writingDone.Wait(ct);
                 Console.WriteLine($"Elapsed: {sw.Elapsed:c}");
             }
 
-            Console.WriteLine($"Blocks read: {_reader.BlocksRead}, blocks written: {BlocksWritten}");
+            Console.WriteLine($"Blocks read: {BlocksRead}, blocks written: {BlocksWritten}");
             Console.WriteLine("Done");
 
             return 0;
@@ -108,11 +103,12 @@ namespace GzipMT.Application
             var spinner = new SpinWait();
             foreach (var block in _reader.GetFileBlocks(ct))
             {
-                var nextQueue = InputQueues[(_reader.BlocksRead - 1) % Options.WorkerThreadsNumber];
+                var nextQueue = InputQueues[BlocksRead % Options.WorkerThreadsNumber];
                 while (!(nextQueue.TryEnqueue(block) || ct.IsCancellationRequested))
                 {
                     spinner.SpinOnce();
                 }
+                ++BlocksRead;
             }
             _readingDone.Set();
         }
@@ -135,6 +131,8 @@ namespace GzipMT.Application
                     spinner.SpinOnce();
                 }
             }
+
+            _processingDone.Signal();
         }
 
         protected void WriteOutputBlocks(string outputFileName, CancellationToken ct)

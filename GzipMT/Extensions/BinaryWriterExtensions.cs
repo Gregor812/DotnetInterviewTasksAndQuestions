@@ -11,7 +11,6 @@ namespace GzipMT.Extensions
             if (binaryWriter == null)
                 throw new ArgumentNullException(nameof(binaryWriter));
 
-            binaryWriter.Write(block.Number);
             binaryWriter.Write(block.Data.Length);
             binaryWriter.Write(block.Data);
         }

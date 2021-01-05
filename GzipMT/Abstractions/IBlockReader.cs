@@ -8,7 +8,6 @@ namespace GzipMT.Abstractions
     public interface IBlockReader<out T> : IDisposable
         where T : Block
     {
-        int BlocksRead { get; }
         IEnumerable<T> GetFileBlocks(CancellationToken ct);
     }
 }

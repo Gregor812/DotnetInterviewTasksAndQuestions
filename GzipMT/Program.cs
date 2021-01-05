@@ -8,7 +8,7 @@ namespace GzipMT
 {
     class Program
     {
-        private const int BufferSize = 8 * 1024 * 1024;
+        private const int BufferSize = 1024 * 1024;
 
         private static readonly CancellationTokenSource Cts = new CancellationTokenSource();
         private static IDataProcessor _dataProcessor;

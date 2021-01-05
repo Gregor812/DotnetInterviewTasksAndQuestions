@@ -29,7 +29,6 @@ namespace GzipMT.Application
 
             block = new UncompressedBlock
             {
-                Number = BlocksRead,
                 Data = bytes
             };
             return true;

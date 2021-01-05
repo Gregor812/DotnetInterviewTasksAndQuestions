@@ -33,7 +33,6 @@ namespace GzipMT.Application
 
             var item = new UncompressedBlock
             {
-                Number = block.Number,
                 Data = readBytes == BufferSize ? buffer : buffer.Take(readBytes).ToArray()
             };
             return item;
