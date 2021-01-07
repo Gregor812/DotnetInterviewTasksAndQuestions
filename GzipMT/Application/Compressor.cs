@@ -7,9 +7,9 @@ namespace GzipMT.Application
 {
     public class Compressor : DataProcessor<UncompressedBlock, CompressedBlock>
     {
-        public Compressor(int workerThreadsNumber, IBlockReader<UncompressedBlock> reader,
-            IBlockWriter<CompressedBlock> writer)
-            : base(workerThreadsNumber, reader, writer)
+        public Compressor(IBlockReader<UncompressedBlock> reader, IBlockWriter<CompressedBlock> writer,
+            int workerThreadsNumber)
+            : base(reader, writer, workerThreadsNumber)
         { }
 
         protected override CompressedBlock CreateOutputBlock(UncompressedBlock block)

@@ -26,7 +26,7 @@ namespace GzipMT.Application
         protected int BlocksWritten;
 
         // TODO: Inject logger as external dependency
-        protected DataProcessor(int workerThreadsNumber, IBlockReader<TInput> reader, IBlockWriter<TOutput> writer)
+        protected DataProcessor(IBlockReader<TInput> reader, IBlockWriter<TOutput> writer, int workerThreadsNumber)
         {
             WorkerThreadsNumber = workerThreadsNumber;
             InputQueues = new BoundedConcurrentQueue<TInput>[WorkerThreadsNumber];

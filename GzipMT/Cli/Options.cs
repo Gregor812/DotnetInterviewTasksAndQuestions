@@ -21,8 +21,6 @@ namespace GzipMT.Cli
         public string InputFile { get; set; }
 
         public string OutputFile { get; set; }
-
-        public int WorkerThreadsNumber => Environment.ProcessorCount;
     }
 
     public class CompressingOptions : ProcessingOptions
