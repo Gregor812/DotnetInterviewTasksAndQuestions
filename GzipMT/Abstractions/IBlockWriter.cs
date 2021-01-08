@@ -3,8 +3,10 @@ using System.Threading;
 
 namespace GzipMT.Abstractions
 {
-    public interface IBlockWriter<in T> : IDisposable
+    public interface IBlockWriter<T> : IDisposable
     {
-        void WriteFileBlock(T block, CancellationToken ct);
+        IQueue<T>[] Queues { get; }
+        ManualResetEventSlim WritingDone { get; }
+        void Start(CountdownEvent processingDone, CancellationToken ct);
     }
 }

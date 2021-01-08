@@ -1,7 +1,8 @@
-﻿using GzipMT.DataStructures;
+﻿using GzipMT.Abstractions;
+using GzipMT.DataStructures;
 using System.IO;
 
-namespace GzipMT.Application
+namespace GzipMT.Application.FileBlockWorkers
 {
     public class UncompressedBlockReader : BlockReader<UncompressedBlock>
     {
@@ -10,14 +11,14 @@ namespace GzipMT.Application
         /// <summary>Creates an instance of the UncompressedBlockReader class</summary>
         /// <returns cref="UncompressedBlockReader"></returns>
         /// <inheritdoc cref="File.OpenRead"/>
-        public static UncompressedBlockReader GetInstance(string filename, int bufferSizeBytes)
+        public static UncompressedBlockReader GetInstance(string filename, IQueue<UncompressedBlock>[] queues, int bufferSizeBytes)
         {
             var inputFile = File.OpenRead(filename);
-            return new UncompressedBlockReader(inputFile, bufferSizeBytes, false);
+            return new UncompressedBlockReader(inputFile, queues, bufferSizeBytes);
         }
 
-        private UncompressedBlockReader(FileStream inputFile, int bufferSizeBytes, bool leaveOpen)
-            : base(inputFile, leaveOpen)
+        private UncompressedBlockReader(FileStream fileToRead, IQueue<UncompressedBlock>[] queues, int bufferSizeBytes)
+            : base(fileToRead, queues)
         {
             _bufferSizeBytes = bufferSizeBytes;
         }

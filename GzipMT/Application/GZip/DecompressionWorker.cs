@@ -4,16 +4,15 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
-namespace GzipMT.Application
+namespace GzipMT.Application.GZip
 {
-    public class Decompressor :
-        DataProcessor<CompressedBlock, UncompressedBlock>
+    public class DecompressionWorker : Worker<CompressedBlock, UncompressedBlock>
     {
         private readonly int _bufferSizeBytes;
 
-        public Decompressor(IBlockReader<CompressedBlock> reader, IBlockWriter<UncompressedBlock> writer,
-            int bufferSizeBytes, int workerThreadsNumber)
-            : base(reader, writer, workerThreadsNumber)
+        public DecompressionWorker(IQueue<CompressedBlock> inputQueue,
+            IQueue<UncompressedBlock> outputQueue, int bufferSizeBytes)
+            : base(inputQueue, outputQueue)
         {
             _bufferSizeBytes = bufferSizeBytes;
         }
