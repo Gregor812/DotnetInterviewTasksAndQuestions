@@ -1,5 +1,6 @@
 ﻿using GzipMT.Abstractions;
 using GzipMT.DataStructures;
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -51,18 +52,27 @@ namespace GzipMT.Application.FileBlockWorkers
             WritingDone.Set();
         }
 
-        public void Dispose()
-        {
-            _fileToWrite?.Dispose();
-            WritingDone?.Dispose();
-        }
-
         private void WriteFileBlock(T block)
         {
             using (var binaryWriter = new BinaryWriter(_fileToWrite, Encoding.Default, true))
             {
                 WriteOutputBlock(binaryWriter, block);
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _fileToWrite?.Dispose();
+                WritingDone?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }

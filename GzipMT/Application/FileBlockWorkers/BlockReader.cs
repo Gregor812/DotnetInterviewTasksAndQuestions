@@ -1,5 +1,6 @@
 ﻿using GzipMT.Abstractions;
 using GzipMT.DataStructures;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -46,12 +47,6 @@ namespace GzipMT.Application.FileBlockWorkers
             ReadingDone.Set();
         }
 
-        public void Dispose()
-        {
-            _fileToRead?.Dispose();
-            ReadingDone?.Dispose();
-        }
-
         private IEnumerable<T> GetFileBlocks(CancellationToken ct)
         {
             using (var binaryReader = new BinaryReader(_fileToRead))
@@ -68,6 +63,21 @@ namespace GzipMT.Application.FileBlockWorkers
                     }
                 }
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _fileToRead?.Dispose();
+                ReadingDone?.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
