@@ -62,11 +62,20 @@ namespace GzipMT.Application.Dispatching
             _writer.WritingDone.Wait();
         }
 
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _processingDone?.Dispose();
+                _reader?.Dispose();
+                _writer?.Dispose();
+            }
+        }
+
         public void Dispose()
         {
-            _processingDone?.Dispose();
-            _reader?.Dispose();
-            _writer?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
     }
 }
