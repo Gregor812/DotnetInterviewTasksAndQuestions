@@ -1,15 +1,21 @@
-﻿using System.Collections.Generic;
+﻿using GzipMT.Abstractions;
+using System.Collections.Generic;
 using System.Threading;
 
-namespace GzipMT
+namespace GzipMT.DataStructures
 {
-    class BoundedConcurrentQueue<T>
+    public class BoundedConcurrentQueue<T> : IQueue<T>
     {
-        private const int MaxItems = 8;
-
-        private readonly Queue<T> _queue = new Queue<T>(MaxItems);
+        private readonly int _maxItems;
+        private readonly Queue<T> _queue;
 
         private int _nonLockExchange;
+
+        public BoundedConcurrentQueue(int maxItems)
+        {
+            _maxItems = maxItems;
+            _queue = new Queue<T>(_maxItems);
+        }
 
         public bool IsEmpty => _queue.Count < 1;
 
@@ -19,7 +25,7 @@ namespace GzipMT
             {
                 try
                 {
-                    if (_queue.Count < MaxItems)
+                    if (_queue.Count < _maxItems)
                     {
                         _queue.Enqueue(item);
                         return true;
@@ -52,7 +58,7 @@ namespace GzipMT
                 }
             }
 
-            item = default(T);
+            item = default;
             return false;
         }
     }

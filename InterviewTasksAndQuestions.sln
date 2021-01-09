@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utils", "ExpressionTreesORM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoAndContraVariance", "CoAndContraVariance\CoAndContraVariance.csproj", "{8860E034-2136-49AF-B143-71DE47B7D54B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GzipMT", "GzipMT\GzipMT.csproj", "{843515C1-3027-4FEE-8F6F-0D26DF5654A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GzipMT", "GzipMT\GzipMT.csproj", "{843515C1-3027-4FEE-8F6F-0D26DF5654A7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
