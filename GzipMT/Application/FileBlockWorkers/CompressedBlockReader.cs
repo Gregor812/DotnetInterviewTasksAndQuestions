@@ -13,11 +13,12 @@ namespace GzipMT.Application.FileBlockWorkers
         public static CompressedBlockReader GetInstance(string filename, IQueue<CompressedBlock>[] queues)
         {
             var inputFile = File.OpenRead(filename);
-            return new CompressedBlockReader(inputFile, queues);
+            var fileInfo = new FileInfo(filename);
+            return new CompressedBlockReader(inputFile, fileInfo, queues);
         }
 
-        private CompressedBlockReader(FileStream fileToRead, IQueue<CompressedBlock>[] queues)
-            : base(fileToRead, queues)
+        private CompressedBlockReader(FileStream fileToRead, FileInfo fileInfo, IQueue<CompressedBlock>[] queues)
+            : base(fileToRead, fileInfo, queues)
         { }
 
         protected override bool TryReadInputBlock(BinaryReader binaryReader, out CompressedBlock block)

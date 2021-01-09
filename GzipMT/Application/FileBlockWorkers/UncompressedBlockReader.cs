@@ -14,11 +14,12 @@ namespace GzipMT.Application.FileBlockWorkers
         public static UncompressedBlockReader GetInstance(string filename, IQueue<UncompressedBlock>[] queues, int bufferSizeBytes)
         {
             var inputFile = File.OpenRead(filename);
-            return new UncompressedBlockReader(inputFile, queues, bufferSizeBytes);
+            var fileInfo = new FileInfo(filename);
+            return new UncompressedBlockReader(inputFile, fileInfo, queues, bufferSizeBytes);
         }
 
-        private UncompressedBlockReader(FileStream fileToRead, IQueue<UncompressedBlock>[] queues, int bufferSizeBytes)
-            : base(fileToRead, queues)
+        private UncompressedBlockReader(FileStream fileToRead, FileInfo fileInfo, IQueue<UncompressedBlock>[] queues, int bufferSizeBytes)
+            : base(fileToRead, fileInfo, queues)
         {
             _bufferSizeBytes = bufferSizeBytes;
         }

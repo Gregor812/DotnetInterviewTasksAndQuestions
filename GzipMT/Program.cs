@@ -77,7 +77,7 @@ namespace GzipMT
                 else if (settings.WorkerThreadsNumber > AppSettings.MaxWorkerThreadsNumber)
                 {
                     Console.WriteLine(
-                        $"Worker threads count will be reduced. Max value is {AppSettings.MaxWorkerThreadsNumber}");
+                        $"Worker threads number will be reduced. Max value is {AppSettings.MaxWorkerThreadsNumber}");
                     settings.WorkerThreadsNumber = AppSettings.MaxWorkerThreadsNumber;
                 }
             }

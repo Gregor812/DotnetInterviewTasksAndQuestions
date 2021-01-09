@@ -1,5 +1,6 @@
 ﻿using GzipMT.Abstractions;
 using GzipMT.DataStructures;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,17 +12,20 @@ namespace GzipMT.Application.FileBlockWorkers
         where T : Block
     {
         private readonly FileStream _fileToRead;
+        private readonly FileInfo _fileInfo;
 
         private int _blocksRead;
 
         public IQueue<T>[] Queues { get; }
         public ManualResetEventSlim ReadingDone { get; }
 
+
         protected abstract bool TryReadInputBlock(BinaryReader binaryReader, out T block);
 
-        protected BlockReader(FileStream fileToRead, IQueue<T>[] queues)
+        protected BlockReader(FileStream fileToRead, FileInfo fileInfo, IQueue<T>[] queues)
         {
             _fileToRead = fileToRead;
+            _fileInfo = fileInfo;
             Queues = queues;
             ReadingDone = new ManualResetEventSlim();
         }
@@ -34,17 +38,36 @@ namespace GzipMT.Application.FileBlockWorkers
 
         public void Read(CancellationToken ct)
         {
-            var spinner = new SpinWait();
-            foreach (var block in GetFileBlocks(ct))
-            {
-                var nextQueue = Queues[_blocksRead % Queues.Length];
-                while (!(nextQueue.TryEnqueue(block) || ct.IsCancellationRequested))
+            AnsiConsole.Progress()
+                .AutoClear(false)
+                .Columns(new ProgressColumn[]
                 {
-                    spinner.SpinOnce();
-                }
-                ++_blocksRead;
-            }
-            ReadingDone.Set();
+                    new TaskDescriptionColumn(),
+                    new ProgressBarColumn(),
+                    new PercentageColumn(),
+                    new SpinnerColumn(Spinner.Known.Aesthetic)
+                })
+                .Start(c =>
+                {
+                    var fullSize = (double)_fileInfo.Length;
+                    var task = c.AddTask("[green]Processing[/]", new ProgressTaskSettings
+                    {
+                        MaxValue = fullSize
+                    });
+
+                    var spinner = new SpinWait();
+                    foreach (var block in GetFileBlocks(ct))
+                    {
+                        var nextQueue = Queues[_blocksRead % Queues.Length];
+                        while (!(nextQueue.TryEnqueue(block) || ct.IsCancellationRequested))
+                        {
+                            spinner.SpinOnce();
+                        }
+                        ++_blocksRead;
+                        task.Increment(block.Data.Length + sizeof(int));
+                    }
+                    ReadingDone.Set();
+                });
         }
 
         private IEnumerable<T> GetFileBlocks(CancellationToken ct)
